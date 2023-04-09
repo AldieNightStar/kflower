@@ -30,4 +30,10 @@ class FlowerLexerTest {
         .let { it as SymbolToken; it.value }
         .let { assertEquals("???", it) }
 
+    @Test
+    fun testLex() = FlowerLexer("file", "abc 123 \n'xyz'").lex()!!
+        .apply { assertEquals("abc", (get(0) as WordToken).value) }
+        .apply { assertEquals("123", (get(1) as NumberToken).value) }
+        .apply { assertEquals("xyz", (get(3) as StringToken).value) }
+
 }
