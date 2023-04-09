@@ -1,10 +1,10 @@
 package haxidenti.flower.lexer
 
 private object Regexes {
-    val SYMBOLS = Regex("[^\\w\\s]+")
-    val NUMBER_INT = Regex("-?\\d+")
-    val NUMBER_FLOAT = Regex("-?\\d+\\.\\d+")
-    val WORD = Regex("[a-zA-Z0-9_\$]+")
+    val SYMBOLS = Regex("^[^\\w\\s]+")
+    val NUMBER_INT = Regex("^-?\\d+")
+    val NUMBER_FLOAT = Regex("^-?\\d+\\.\\d+")
+    val WORD = Regex("^[a-zA-Z0-9_\$]+")
 }
 
 fun CharSequence.subSequenceToEnd(pos: Int): CharSequence {
@@ -37,10 +37,10 @@ class FlowerLexer(val fileName: String, val text: String) {
 
     fun lexOne(text: CharSequence): Token? {
         if (text.startsWith(" ") || text.startsWith("\t") || text.startsWith("\r")) return IgnoredToken(info, 1)
-        lexWord(text)?.let { return it }
         lexString(text)?.let { return it }
         lexNumberFloat(text)?.let { return it }
         lexNumberInt(text)?.let { return it }
+        lexWord(text)?.let { return it }
         lexComments(text)?.let { return it }
         lexSymbols(text)?.let { return it }
 

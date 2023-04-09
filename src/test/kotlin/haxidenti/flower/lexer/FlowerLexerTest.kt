@@ -1,9 +1,20 @@
 package haxidenti.flower.lexer
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
-class FlowerLexerTest {
+open class FlowerLexerTest {
+
+    @Test
+    fun testLexNumberFail() = assertNull(FlowerLexer("file", "??").lexNumberInt("abc 123"))
+
+    @Test
+    fun testLex() = FlowerLexer("file", "abc 123 \n'xyz'").lex()
+        .apply { assertEquals("abc", (get(0) as WordToken).value) }
+        .apply { assertEquals("123", (get(1) as NumberToken).value) }
+        .apply { assertEquals("xyz", (get(2) as StringToken).value) }
+        .let { }
 
     @Test
     fun testString() = FlowerLexer("file", "").lexString("'An \\'string'")
@@ -29,11 +40,5 @@ class FlowerLexerTest {
     fun testLexOne() = FlowerLexer("file", "").lexOne("???\n")!!
         .let { it as SymbolToken; it.value }
         .let { assertEquals("???", it) }
-
-    @Test
-    fun testLex() = FlowerLexer("file", "abc 123 \n'xyz'").lex()!!
-        .apply { assertEquals("abc", (get(0) as WordToken).value) }
-        .apply { assertEquals("123", (get(1) as NumberToken).value) }
-        .apply { assertEquals("xyz", (get(3) as StringToken).value) }
 
 }
