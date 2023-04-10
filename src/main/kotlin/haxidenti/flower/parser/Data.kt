@@ -2,12 +2,12 @@ package haxidenti.flower.parser
 
 import haxidenti.flower.lexer.FileInfo
 
-open class Command(val info: FileInfo, val name: String, val args: List<Command>)
+open class Command(val info: FileInfo, val name: String, val args: List<Command>, val size: Int)
 
 class VariableGetCommand(info: FileInfo, val varName: String) :
-    Command(info, "get", listOf(StaticStringCommand(info, varName)))
+    Command(info, "get", listOf(StaticStringCommand(info, varName)), 1)
 
-open class StaticCommand<T>(info: FileInfo, val dat: T) : Command(info, "data", listOf())
+open class StaticCommand<T>(info: FileInfo, val dat: T) : Command(info, "data", listOf(), 1)
 
 class StaticIntCommand(info: FileInfo, dat: Int) : StaticCommand<Int>(info, dat)
 class StaticFloatCommand(info: FileInfo, dat: Float) : StaticCommand<Float>(info, dat)
