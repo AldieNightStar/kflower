@@ -25,16 +25,17 @@ class FlowerParserTest {
 
     @Test
     fun testCommandParseWithNested() {
-        val parsed = FlowerParser().parse(FlowerLexer("file", "(cmd (pos 1 2) 3)").lex()).first().let {
+        val parsed = FlowerParser().parse(FlowerLexer("file", "(cmd :: (pos 1 2) 3)").lex()).first().let {
             it.name eq "cmd"
-            it.args.size eq 2
-            it.args[0].let {
+            it.args.size eq 3
+            (it.args[0] as OperatorCommand).dat eq "::"
+            it.args[1].let {
                 it.name eq "pos"
                 it.args.size eq 2
                 (it.args[0] as StaticIntCommand).dat eq 1
                 (it.args[1] as StaticIntCommand).dat eq 2
             }
-            (it.args[1] as StaticIntCommand).dat eq 3
+            (it.args[2] as StaticIntCommand).dat eq 3
         }
     }
 
