@@ -1,12 +1,31 @@
 package haxidenti.flower.parser
 
 import haxidenti.flower.lexer.*
+import javax.swing.text.html.parser.Parser
 
 class FlowerParser {
 
+    fun parse(tokens: List<Token>): List<Command> {
+        var pos = 0
+        val list = mutableListOf<Command>()
+        while (pos < tokens.size) {
+            val slice = tokens.subList(pos, tokens.size)
+            val cmd = parseOne(slice)
+            if (cmd != null) {
+                pos += cmd.size
+                list.add(cmd)
+                continue
+            }
+            throw ParserException(slice.first().info, "Unknown token")
+        }
+        return list
+    }
+
     fun parseOne(tokens: List<Token>): Command? {
         val first = tokens.firstOrNull() ?: return null
+        if (first.isClosedBracket) return null
         parseSingleToken(first)?.let { return it }
+        parseCommand(tokens)?.let { return it }
         return null
     }
 
@@ -24,11 +43,15 @@ class FlowerParser {
                 args.add(arg)
                 continue
             } else {
+                val closing = tokens.getOrNull(pos)?.isClosedBracket ?: throw ParserException(slice.last().info, "I can't find closing command token after this parameter")
+                if (!closing) {
+                    throw ParserException(slice.last().info, "Last closing token is not a ')' operator")
+                }
                 break
             }
         }
         if (args.isEmpty())  throw ParserException(tokens.first().info, "Empty command found")
-        return Command(tokens.first().info, commandName, args, pos)
+        return Command(tokens.first().info, commandName, args, pos + 1)
     }
 
     fun parseSingleToken(tok: Token): Command? {
