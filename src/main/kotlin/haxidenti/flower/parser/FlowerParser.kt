@@ -2,13 +2,13 @@ package haxidenti.flower.parser
 
 import haxidenti.flower.lexer.*
 
-class Parser {
+class FlowerParser {
 
     fun parse(tokens: List<Token>): List<Command> {
         var pos = 0
         val list = mutableListOf<Command>()
         while (pos < tokens.size) {
-            var currentTokens = tokens.subList(pos, tokens.size)
+            val currentTokens = tokens.subList(pos, tokens.size)
             val commandCount = parseCommand(currentTokens)
             if (commandCount != null) {
                 pos += commandCount.second
@@ -22,10 +22,10 @@ class Parser {
 
     fun parseCommand(tokens: List<Token>): Pair<Command, Int>? {
         val first = tokens.firstOrNull() ?: return null
-        if (first.isBracket(true)) return null
+        if (!first.isBracket(true)) return null
         val (args, count) = parseArgs(tokens.subList(1, tokens.size))
         if (args.isEmpty()) return null
-        val lastToken = tokens.getOrNull(count + 1) ?: return null
+        val lastToken = tokens.getOrNull(count+1) ?: return null
         if (!lastToken.isBracket(false)) return null
         return Pair(
             Command(
@@ -46,7 +46,8 @@ class Parser {
         var pos = 0
         val list = mutableListOf<Command>()
         while (pos < tokens.size) {
-            val curList = tokens.subList(pos, list.size)
+            val curList = tokens.subList(pos, tokens.size)
+            if (tokens[pos].isBracket(false)) break
             val commandAntCount = curList.toCommand()
             if (commandAntCount != null) {
                 val (command, count) = commandAntCount
@@ -72,21 +73,34 @@ class Parser {
         val first = this.getOrNull(0) ?: return null
         (first as? StringToken)
             ?.let { return StaticStringCommand(first.info, it.value).singleTokenPair }
-        (first as? NumberToken)?.value?.toFloatOrNull()
+
+        // Numbers
+        (first as? NumberToken)?.value?.containingDot?.toFloatOrNull()
             ?.let { return StaticFloatCommand(first.info, it).singleTokenPair }
         (first as? NumberToken)?.value?.toIntOrNull()
             ?.let { return StaticIntCommand(first.info, it).singleTokenPair }
+
+        // Booleans
         (first as? WordToken)?.value?.either("true", "false")
             ?.let { return StaticBoolCommand(first.info, first.value == "true").singleTokenPair }
+
+        // Byte numbers b123
         (first as? WordToken)?.value?.prefixed("b")?.toIntOrNull()
             ?.let { return StaticByteCommand(first.info, it.toByte()).singleTokenPair }
+
+        // Null word
         (first as? WordToken)?.value?.equalsOrNone("null")
             ?.let { return StaticNullCommand(first.info).singleTokenPair }
+
+        // Any other word token
         (first as? WordToken)
             ?.let { return VariableGetCommand(first.info, it.value).singleTokenPair }
-        // Here we are parsing command
+
+        // Command beginning "("
         (first as? SymbolToken)?.openedBracket
             ?.let { return parseCommand(this) }
+
+        // Symbol tokens
         (first as? SymbolToken)
             ?.let { return OperatorCommand(first.info, it.value).singleTokenPair }
         return null
@@ -95,6 +109,7 @@ class Parser {
     private fun String.either(vararg vals: String) = if (vals.contains(this)) this else null
     private fun String.prefixed(pref: String) = if (this.startsWith(pref)) this.substring(pref.length) else null
     private fun String.equalsOrNone(v: String) = if (this == v) this else null
+    private val String.containingDot get() = if("." in this) this else null
 
     private val Token.asWord get() = if (this is WordToken) this else null
     private val SymbolToken.openedBracket get() = if (value == "(") this else null

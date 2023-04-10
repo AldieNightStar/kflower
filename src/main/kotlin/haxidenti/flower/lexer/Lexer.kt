@@ -24,7 +24,7 @@ class FlowerLexer(val fileName: String, val text: String) {
     }
 
     fun lex(): List<Token> {
-        var list = mutableListOf<Token>()
+        val list = mutableListOf<Token>()
         while (pos < text.length) {
             val curText = text.subSequenceToEnd(pos)
             // Next lines
@@ -43,6 +43,8 @@ class FlowerLexer(val fileName: String, val text: String) {
 
     fun lexOne(text: CharSequence): Token? {
         if (text.startsWith(" ") || text.startsWith("\t") || text.startsWith("\r")) return IgnoredToken(info, 1)
+        if (text.startsWith("(") || text.startsWith(")"))
+            return SymbolToken(info, text[0].toString(), 1)
         lexString(text)?.let { return it }
         lexNumberFloat(text)?.let { return it }
         lexNumberInt(text)?.let { return it }
