@@ -16,6 +16,12 @@ class FlowerLexer(val fileName: String, val text: String) {
     var pos = 0
 
     val info: FileInfo get() = FileInfo(fileName, line)
+    val isEnded: Boolean get() = pos >= text.length
+
+    fun reset() {
+        line = 1
+        pos = 0
+    }
 
     fun lex(): List<Token> {
         var list = mutableListOf<Token>()
